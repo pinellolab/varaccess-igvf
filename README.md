@@ -1,7 +1,10 @@
-# varACCESS accessibility stats
+# varaccess-igvf
 
-Scores varACCESS elements against the Safe-site negative control panel.
-Adds `l2fc`, `pvalue` and `qvalue` to a per-element accessibility table.
+Scores varACCESS elements against the Safe-site negative control panel for the IGVF
+submission. Adds `l2fc`, `pvalue` and `qvalue` to a per-element accessibility table.
+
+Two datasets, scored separately: **2024** (6 replicates, `SAFE1_Rep1..SAFE3_Rep6`) and
+**2026** (4 replicates, `rep1..rep4`).
 
 ## Usage
 
@@ -22,9 +25,8 @@ CSV with one row per element and these columns:
 | `<rep>_edit_rate` | `sum(edits) / sum(total)` over the element's editable positions |
 | `<rep>_mean_edits` | `sum(edits) / editable_positions` |
 
-Replicates are discovered from the `_edit_rate` suffix, so any number of them works
-(`rep1..rep4` for caQTL V3, `SAFE1_Rep1..SAFE3_Rep6` for HepG2). `overall_*` is ignored.
-Everything else is passed through untouched.
+Replicates are discovered from the `_edit_rate` suffix, so either dataset works without
+configuration. `overall_*` is ignored. Everything else is passed through untouched.
 
 ## Method
 
@@ -51,8 +53,19 @@ pvalue = 2 * norm.sf( |l2fc - centre| / sigma )
 rather than being hypotheses, so their `qvalue` is blank.
 
 The Gaussian fit replaces a straight empirical tail because 300 Safe sites floor an empirical
-p-value at 1/301. It is calibrated against the Safe panel itself: 4.7% (caQTL V3) and 4.3%
-(HepG2) of Safe sites reach p<0.05 against a nominal 5%.
+p-value at 1/301. It is calibrated against the Safe panel itself: 4.3% (2024) and 4.7% (2026)
+of Safe sites reach p<0.05 against a nominal 5%.
 
-Datasets must be scored separately. Safe baselines differ about 3.5x between HepG2 and
-caQTL V3, so a shared null would be wrong.
+Run the two datasets separately. Their Safe baselines differ about 3.5x
+(2024 0.036-0.047, 2026 0.012-0.014), so a shared null would be wrong.
+
+## Caveats
+
+p-values far into the tail are extrapolated from a null estimated on 300 points; ranking is
+meaningful there, the absolute value is not.
+
+Safe sites are GC-poorer than test elements (median 0.370 vs 0.49-0.50) and Safe `l2fc` rises
+with GC, so part of the signal for GC-rich elements is base composition.
+
+The 2024 assay sits close to saturation (Safe baseline 0.036-0.047), leaving little headroom;
+its `l2fc` values are compressed and the p-values are correspondingly low-powered.
